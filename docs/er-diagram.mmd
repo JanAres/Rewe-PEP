@@ -1,0 +1,105 @@
+erDiagram
+    EMPLOYEES {
+        uuid employee_id PK "Unique employee ID"
+        varchar first_name "Employee’s first name"
+        varchar last_name "Employee’s last name"
+        varchar email UK "Employee email"
+        varchar designation "Job title or position"
+        uuid team_id FK "The team they belong to"
+        varchar employment_type "e.g. full-time, part-time"
+        boolean is_active "Soft delete / inactive marker"
+        timestamp created_at "Record creation date"
+    }
+
+    TEAMS {
+        uuid team_id PK "Unique team ID"
+        varchar team_name UK "Team name"
+        text description "Optional description"
+        timestamp created_at "Creation timestamp"
+    }
+
+    TEAM_MANAGERS {
+        uuid team_manager_id PK "Unique ID"
+        uuid team_id FK "Team ID"
+        uuid manager_id FK "Manager (employee) ID"
+        timestamp assigned_at "When assigned"
+    }
+
+    PLANS {
+        uuid plan_id PK "Unique plan ID"
+        varchar plan_name "e.g. “Morning Shift”"
+        time start_time "Start of work hours"
+        time end_time "End of work hours"
+        time break_start "Optional break start"
+        time break_end "Optional break end"
+        text description "Optional notes"
+        uuid created_by FK "Manager who created it"
+        timestamp created_at "When created"
+    }
+
+    EMPLOYEE_PLANS {
+        uuid employee_plan_id PK "Unique ID"
+        uuid employee_id FK "Employee ID"
+        uuid plan_id FK "Assigned plan ID"
+        date plan_date "Date for which plan applies"
+        varchar status "e.g. Scheduled, Completed"
+        text feedback "Employee feedback"
+        timestamp updated_at "Last update time"
+    }
+
+    LEAVES {
+        uuid leave_id PK "Unique leave ID"
+        uuid employee_id FK "Employee taking leave"
+        varchar leave_type "Sick, Personal, Unpaid"
+        date start_date "Start of leave"
+        date end_date "End of leave"
+        text reason "Optional reason"
+        varchar status "Pending, Approved, Rejected"
+        uuid approved_by FK "Manager who approved"
+        timestamp created_at "Submission date"
+    }
+
+    FEEDBACK {
+        uuid feedback_id PK "Unique ID"
+        uuid employee_id FK "Employee giving feedback"
+        int plan_id FK "Plan related to feedback"
+        text comment "Feedback text"
+        int rating "Optional rating (1–5)"
+        timestamp created_at "When submitted"
+    }
+
+    SCORES {
+        uuid score_id PK "Unique ID"
+        uuid employee_id FK "Employee scored"
+        uuid team_id FK "Optional for team-based scores"
+        varchar score_type "'Individual' or 'Team'"
+        date period_start "Start of scoring period"
+        date period_end "End of scoring period"
+        decimal score_value "Calculated score"
+        varchar calculated_by "‘AI’, ‘Manual’, etc."
+        timestamp created_at "Date of calculation"
+    }
+
+    AUDIT_LOGS {
+        uuid log_id PK "Unique log ID"
+        varchar action "e.g. “Plan Created”"
+        int performed_by FK "Who did it"
+        int target_id "ID of affected entity"
+        varchar target_type "e.g. “plan”, “employee”"
+        timestamp timestamp "Action time"
+        jsonb details "Extra metadata"
+    }
+
+    TEAMS ||--|{ EMPLOYEES : "has"
+    TEAMS }o--|| TEAM_MANAGERS : "is managed by"
+    EMPLOYEES }o--|| TEAM_MANAGERS : "manages"
+    EMPLOYEES ||--o{ PLANS : "creates"
+    EMPLOYEES }o--|| EMPLOYEE_PLANS : "is assigned to"
+    PLANS }o--|| EMPLOYEE_PLANS : "is scheduled for"
+    EMPLOYEES ||--|{ LEAVES : "requests"
+    EMPLOYEES ||--o{ LEAVES : "approves"
+    EMPLOYEES ||--|{ FEEDBACK : "gives"
+    PLANS ||--o{ FEEDBACK : "is about"
+    EMPLOYEES ||--|{ SCORES : "receives"
+    TEAMS ||--o{ SCORES : "receives"
+    EMPLOYEES ||--|{ AUDIT_LOGS : "performs"
