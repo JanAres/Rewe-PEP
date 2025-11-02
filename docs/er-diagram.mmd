@@ -53,15 +53,32 @@ erDiagram
         timestamp created_at  "Record creation timestamp"
     }
 
-    TIME_ACCOUNT {
-        uuid time_account_id PK  "Unique time account record identifier"
-        uuid employee_id FK  "Linked employee"
-        float balance  "Working hour balance (positive or negative)"
+    NOTIFICATION {
+        uuid notification_id PK  "Unique notification identifier"
+        uuid employee_id FK  "Notification receiver"
+        varchar title  "Short message title"
+        text message  "Detailed notification content"
+        boolean is_read  "Read status"
+        timestamp created_at  "When notification was sent"
+    }
+
+    SESSION {
+        uuid session_id PK  "Unique session identifier"
+        uuid employee_id FK  "User logged in"
+        varchar device_type  "Web, Mobile, Tablet, etc."
+        varchar ip_address  "IP address for tracking"
+        varchar user_agent  "Browser/user agent details"
+        timestamp login_time  "Login timestamp"
+        timestamp logout_time  "Logout timestamp (nullable)"
+        boolean is_active  "Active session flag"
         timestamp created_at  "Record creation timestamp"
     }
 
     DEPARTMENT ||--o{ EMPLOYEE : has
     EMPLOYEE ||--|{ ROLE : has
     EMPLOYEE ||--o{ TIME_ENTRY : "records"
-    EMPLOYEE ||--o{ ABSENCE : "has"
+    EMPLOYEE ||--o{ ABSENCE : "requests"
     EMPLOYEE ||--|{ TIME_ACCOUNT : "has"
+    EMPLOYEE ||--o{ NOTIFICATION : "receives"
+    EMPLOYEE ||--o{ SESSION : "logs from"
+    EMPLOYEE ||--o{ EMPLOYEE : "approves > approved_by"
